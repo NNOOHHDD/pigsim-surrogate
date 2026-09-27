@@ -20,6 +20,13 @@ surrogate/
   figures/             parity_test.png, uncertainty_vs_error.png,
                        sweep_extrapolation.png, learning_curves.png
   models/ensemble.pt   학습된 가중치 + 스케일링 통계
+
+  # 2단계
+  baselines.py         선형 / 다항 / GP vs MLP 앙상블 (같은 분할) → baselines.json
+  generate_wide_data.py  입력 범위를 넓혀 pig 미출발·미도착 포함 → data_wide.csv (540회)
+  regime.py            넓은 범위 회귀 + 도착 여부 분류기 → regime.json,
+                       models/wide_ensemble.pt, models/arrival_classifier.pt
+  inverse_design.py    대리모델 + 분류기로 역설계, 후보를 pigsim으로 재확인 → inverse*.json
 ```
 
 실행 순서:
@@ -28,9 +35,17 @@ surrogate/
 python tests/test_pigsim.py              # 0. 솔버 환경 확인 (전부 PASS)
 python surrogate/generate_data.py        # 1. 약 28분 (4코어)
 python surrogate/train_surrogate.py      # 2. 약 1분
+# 2단계
+python surrogate/baselines.py            # 3. 기준선 비교, 약 30초
+python surrogate/generate_wide_data.py   # 4. 540회, 약 20분 (4코어)
+python surrogate/regime.py               # 5. 영역 전환 비교, 약 3분
+python surrogate/inverse_design.py       # 6. 역설계 + pigsim 재확인 (문제 A), 약 1.5분
+python surrogate/inverse_design.py --t-max 1500 --v-max 15 --tag _slow   # 문제 B
 ```
 
-필요 패키지: `numpy scipy matplotlib pandas torch`. torch는 CPU로 충분하다
+2단계 결과는 `RESULTS.md` 8–11절에 있다. scikit-learn(GP, 다항 회귀)이 추가로 필요하다.
+
+필요 패키지: `numpy scipy matplotlib pandas torch scikit-learn`. torch는 CPU로 충분하다
 (`pip install torch --index-url https://download.pytorch.org/whl/cpu`가 가볍다.
 그 주소가 막힌 환경이면 PyPI의 `pip install torch`도 CPU에서 그대로 동작한다).
 
