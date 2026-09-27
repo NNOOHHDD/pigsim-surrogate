@@ -1,0 +1,30 @@
+{
+  "n_usable": 650,
+  "n_train": 454,
+  "n_val": 97,
+  "n_test": 99,
+  "train_time_s": 51.5,
+  "pigsim_s_per_run": 10.15,
+  "surrogate_s_single_call": 0.00023980135353502357,
+  "surrogate_s_per_point_batched": 2.779875900000661e-06,
+  "speedup_single_call": 42334,
+  "speedup_batched": 3651882,
+  "test": {
+    "t_arrive": {
+      "R2": 0.999935174989862,
+      "RMSE": 0.47761938540436727,
+      "MAPE_%": 0.21299863593162593,
+      "max_abs_err": 3.919785791918571,
+      "mean_ens_std": 0.27599029567845246,
+      "frac_within_2std": 0.9090909090909091
+    },
+    "v_max": {
+      "R2": 0.9994334627268782,
+      "RMSE": 0.21979462017119591,
+      "MAPE_%": 0.23831957725807526,
+      "max_abs_err": 0.8454782444798496,
+      "mean_ens_std": 0.09050191793034412,
+      "frac_within_2std": 0.6565656565656566
+    }
+  }
+}

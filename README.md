@@ -1,0 +1,229 @@
+# pigsim — 비등온 가스/액체 배관 내 pig 과도 운동 시뮬레이터
+
+A. O. Nieckele, A. M. B. Braga, L. F. A. Azevedo,
+*"Transient Pig Motion Through Non-Isothermal Gas and Liquid Pipelines"*,
+Proc. 3rd Int. Pipeline Conference (IPC2000), ASME, **IPC2000-175** 의 재현 구현.
+
+논문 재현 코드(`pigsim/`, `cases/`)와, 이 솔버를 흉내 내는 신경망 대리모델
+(`surrogate/`, 자세한 내용은 `surrogate/README.md`와 `surrogate/RESULTS.md`)을 담는다.
+
+```
+pigsim/          솔버 라이브러리
+  fluids.py        이상기체 / 액체 물성 (식 7–9)
+  geometry.py      배관 경로, 관 탄성 λ, 마찰계수
+  pig.py           pig 힘평형, bypass, stick/slip 접촉력 (식 4–6)
+  domain.py        pig 한쪽 영역: 이동적응격자 + staggered 반음해 유한차분
+  solver.py        상류·하류 유동 + pig 동역학 커플링
+cases/           논문 케이스 2개
+plots/           그림 생성 및 검증표
+tests/           해석해 대비 검증
+verification/    수치 민감도 기록
+surrogate/       pigsim 대리모델 (MLP 앙상블)
+results/, figures/   실행 산출물 (저장소에는 포함하지 않음, 실행하면 생성)
+```
+
+---
+
+## 1. 구현된 모델
+
+| 논문 | 구현 위치 |
+|---|---|
+| 식 (1) 질량보존 (관 변형 λ, 엔탈피 항 포함) | `domain.py` continuity row |
+| 식 (2) 운동량 | `domain.py` momentum row |
+| 식 (3) 에너지 (압축일, 점성소산, 벽 열손실 `4U_G/(ρc_pD)`, 축방향 전도) | `domain.py` `_energy_rows` |
+| 식 (4) pig 힘평형 | `solver.py` residual `R1` |
+| 식 (5) bypass 국부 압력강하 | `pig.py` `dp_bypass`, residual `R2` |
+| 식 (6) stick/slip 접촉력 (전/후진 비대칭 허용) | `pig.py` `contact_force` |
+| 식 (7)(8)(9) 물성 | `fluids.py` |
+| 식 (10)(11) 이동좌표 `(η,t)`, grid velocity `v_g` | `domain.py` `set_mesh` |
+| 식 (12) 결합계 + staggered mesh + 적응격자 | `domain.py` `_linear_solve` |
+
+**질량보존식.** 텍스트 추출본에서는 식 (1)이 깨져 나와 물성 관계로부터 재유도했고
+(`(1/ρ)dρ = χ_p dp + χ_h dh` + 관 탄성 `(1/A)DA/Dt = c_A Dp/Dt`
+→ `χ_p + c_A = ξ/(ρa²)`, `χ_h = −β/c_p`), 이후 **PDF 원본 페이지를 이미지로
+렌더링해 직접 대조**했다. 인쇄된 식 (1)은
+
+```
+∂p/∂t + V ∂p/∂x + (ρa²/ξ)[ ∂V/∂x + (V/A)∂A/∂x − (β/c_p)(∂h/∂t + V ∂h/∂x) ] = 0
+```
+
+로, 재유도 결과와 **완전히 동일**하다. 논문의 기호는 λ가 아니라 **ξ** 이며
+`ξ = 1 + ρa²·2C_D·(D/D_ref)`, `C_D = (1−μ²)D_ref/(2eE)` → `ξ = 1 + ρa²(1−μ²)D/(eE)`
+(코드의 `PipeRoute.lam()`). 이상기체에서는 `χ_h = −1/(c_p T)` 로 환원된다.
+
+**식 (12)와의 관계.** 논문은 결합계를
+
+```
+∂/∂t (p,V,h)ᵀ + [ Ṽ      ρa²/ξ   −(ρa²/ξ)(β/c_p) ]
+                 [ 1/ρ     Ṽ       0              ] (1/h_η) ∂/∂η (p,V,h)ᵀ = S_c + S_p (p,V,h)ᵀ
+                 [ −Ṽ/ρ    0       Ṽ              ]
+```
+
+로 쓴다 (`Ṽ` = 상대속도, `V` = 절대속도). 계수행렬은 본 구현과 항별로 일치한다:
+이류항은 상대속도, 발산항은 절대속도, 에너지식의 압력항 계수 `−Ṽ/ρ` 까지 동일하다.
+**차이는 하나** — 논문은 시간미분 교차항(연속식의 `−(ρa²β/ξc_p)∂h/∂t`, 에너지식의
+`−(1/ρ)∂p/∂t`)과 기하·소스항을 `S_c + S_p` 로 빼내는 반면, 본 구현은 이들을
+계수행렬 안에 남겨 **완전 음해로 결합**한다. 같은 방정식을 더 강하게 결합해 푸는 셈이다.
+
+**수치기법.** staggered mesh (셀 중심에 `p, h`, 면에 `V`), 완전 음해 시간적분 +
+계수 국소선형화(Picard), 공간 중심차분. 미지수를 `[p_c, h_c, V_c, …]` 로
+교차 배열하면 계수행렬의 최대 대역폭이 5가 되어 (논문의 hepta-diagonal 구조)
+LAPACK 밴드 솔버로 직접 푼다 — dense 대비 **35배** 빠르다.
+
+---
+
+## 2. 논문 대비 검증
+
+`python plots/validation_table.py`
+
+### Case 1 — 라이저 dewatering (질소/물, sealing pig)
+
+| 항목 | 논문 | 본 구현 |
+|---|---|---|
+| pig가 point 2 (350 m) 통과 | 270 s | 253 s (−6 %) |
+| pig가 point 3 (650 m) 통과 | 820 s | 809 s (−1 %) |
+| pig가 point 5 (850 m) 통과 | 1080 s | 1102 s (+2 %) |
+| pig가 바닥부에 있는 동안 입구압 | 거의 일정 | 65.8 → 65.6 bar |
+| 등온 vs 비등온 | 비등온이 약간 지연 | 1213 s vs 1202 s ✔ |
+
+### Case 2 — 급격한 단면변화 가스관 (bypass + stick/slip)
+
+| 항목 | 논문 | 본 구현 |
+|---|---|---|
+| 확대구간(10 km) 도달 | ~300 s | 317 s (+6 %) |
+| 확대구간 중앙(15 km) | 500 s | 473 s (−5 %) |
+| 20 km에서 정지마찰로 **정지** | "~600 s, 700 s에 정지 상태" | 699 → 786 s 정지 ✔ |
+| 배관 이탈 | "1500 s 조금 뒤" | 1549 s (+3 %) |
+| 등온 vs 비등온 pig 거동 | 거의 동일 | 1549 s vs 1542 s ✔ |
+
+논문의 서술적 관찰이 모두 재현된다: 초기 급가속 후 접촉력에 의한 감속,
+확대구간 진입 시 재가속, 축소구간 입구에서의 정지와 상류 압력 상승 후 재출발,
+pig 앞뒤 온도 급강하, bypass를 통한 하류 온도 평활화, 그리고
+**"온도 분포가 pig 동역학에 미치는 영향은 매우 작다"** 는 논문의 결론.
+
+### Fig. 10 곡선 직접 대조 (600 dpi 원본 이미지 재판독)
+
+재판독 결과 기존의 12 km, 45 m/s 값은 비등온 곡선 위의 값이 아니었으며,
+올바른 값은 약 35 m/s 이다. 15 km도 약 27.5 m/s로 다시 판독했다. 수정된
+Figure 10 비교에서 속도 RMS 오차는 7.75 %이며, 최대 절대 차이는 11 km에서
+약 5.16 m/s이다. 20 km 도달 시각은 논문의 약 600 s보다 약 98 s 늦다.
+
+재판독 좌표는 `plots/paper_reference.py`에 모아 두었고 검증 스크립트와 그림이
+같은 값을 사용한다. 이 수정은 비교용 데이터의 정정이며 솔버나 물리계수의
+개선으로 간주하지 않는다. 상세 민감도 결과는
+`verification/one_pig_sensitivity.md`에 기록했다.
+
+> **초기 오차와 그 원인.** 처음에는 마지막 구간이 13 → 17 m/s 로 논문(12–13 m/s)보다
+> ~25 % 빨랐고 배관 이탈이 1413 s (−6 %) 였다. 원인은 출구 밸브식이었다. 텍스트
+> 추출본이 깨져 표준 오리피스식 `√(2Δp/ρ)` 로 구현했으나, 원본 식 (8)은
+> **인수 2가 없다**: `ṁ = ρ(C_dA)₀ χ √((p−p_res)/ρ)`. 즉 밸브를 √2 = 1.41배
+> 더 열어둔 셈이었다. 논문 그대로 고치자 마지막 구간이 12.6 → 13.8 m/s 로,
+> 이탈 시각이 1549 s (+3 %) 로 맞았다.
+
+### Case 1 Fig. 3 / Fig. 7 직접 대조
+
+Fig. 3 은 **atm** 단위다. 입구 압력: t=200 s 논문 ~36 atm / 본 구현 35.3 atm,
+t=800 s 논문 ~65 / 64.5, 바닥부 최대 논문 ~68 / 69. t=1150 s (급상승 과도구간)
+에서만 +25 % 로 벌어진다.
+Fig. 7 의 최대 pig 속도(x≈50 m)는 논문 약 3.5 m/s / 본 구현 3.5 m/s.
+상승부에서 `V_pig = 16 m/s` 에 도달하는 위치는 논문 ~1345 m / 본 구현 1315 m (−2 %).
+논문 Fig. 7 의 곡선은 매끄러우며, `N = 200` 으로 계산한 본 구현도 매끄럽다
+(5절의 격자 민감도 참조).
+
+### 솔버 자체 검증 (`python tests/test_pigsim.py`)
+
+해석해 대비 오차 — 정수압 0.03 %, Darcy–Weisbach 마찰 압력강하 0.01 %,
+등온 압축성 관유동 `p₁²−p₂² = f(L/D)G²RT` 0.00 %, bypass 식 왕복 및
+stick/slip 논리 모두 통과.
+
+---
+
+## 3. 실행
+
+```bash
+python cases/case1_riser.py --t-end 1400            # 라이저 dewatering
+python cases/case1_riser.py --t-end 1400 --isothermal
+python cases/case2_area_change.py --t-end 1700      # 단면변화 가스관
+python cases/case2_area_change.py --t-end 1700 --isothermal
+python plots/plot_case1.py && python plots/plot_case2.py
+python plots/validation_table.py
+python tests/test_pigsim.py
+```
+
+필요 패키지는 `numpy`, `scipy`, `matplotlib` 뿐이다.
+
+---
+
+## 4. 논문과 다르게 처리한 부분 (의도적)
+
+1. **엔탈피 이류항은 풍상차분(upwind)이 기본.** 논문은 전 항 중심차분이라고
+   기술하나, 엔탈피 수송은 사실상 순수 이류다. `p`, `V` 는 논문대로 중심차분이며
+   `--scheme-h central` 로 논문 설정을 그대로 실행할 수 있다.
+   **두 설정을 실제로 비교했다**:
+
+   | | Case 2 (가스 단일유체) | Case 1 (질소/물) |
+   |---|---|---|
+   | pig 도달 시각 차이 | < 0.15 % | < 0.04 % |
+   | 최고 pig 속도 | 84.71 vs 84.62 m/s | 45.53 vs 45.60 m/s |
+   | 온도장 total variation (중심/풍상) | 1.0 – 1.16 | **42 (최대 103)** |
+   | 물 최저온도 (중심차분) | — | **−12 °C** (물리적으로 불가능) |
+
+   **pig 동역학에는 사실상 영향이 없다** — 논문의 결론("온도는 pig 동역학에
+   영향 거의 없음")과 정합한다. 그러나 Case 1 물 영역에서 중심차분은
+   격자 단위 진동으로 붕괴한다. 셀 Péclet 수가 `ρ|U|Δs/(k/c_p) ~ 3×10⁷` 이라
+   중심차분이 무조건 진동하는 영역이기 때문이다.
+   논문의 Fig. 6 은 매끄러우므로, **논문 역시 엔탈피에는 순수 중심차분을
+   쓰지 않았을 것**으로 보인다(풍상/혼합 또는 인공확산).
+2. **격자 재배분 대신 격자 신축.** 논문은 pig 양쪽 절점 수를 길이에 비례해
+   재배분한다. 여기서는 절점 수를 고정하고 `η` 좌표를 신축시켜 보간 오차를
+   없앴다. pig 근처 집중은 동일하게 유지하되, 영역 길이가 전체의 2 % 미만이면
+   균일격자로 완화한다 (그렇지 않으면 mm 크기 셀이 생겨 발산한다).
+3. **적응 시간간격 + 스텝 기각.** pig가 정지마찰을 벗어나는 순간 가속도가
+   수백 m/s² 에 달해, `|ΔV_p|` 가 한계를 넘거나 해가 발산하면 스텝을 되돌리고
+   `dt/4` 로 재시도한다.
+4. **면적 계단 완화.** Case 2의 직경 계단(85 → 86.5 cm)을 20 m 구간에 걸쳐
+   tanh 로 완화했다. 접촉력 계단은 논문대로 불연속으로 두었다 (20 km 정지 거동의 원인).
+5. **pig 초기 위치.** 논문은 입구(s=0)이나 상류 영역 길이가 0이 되므로
+   Case 1은 10 m, Case 2는 5 m 에서 출발한다 (전장의 0.02 % / 0.7 %).
+6. **OCR 판독 보정 (원본 이미지로 검증 완료).** 텍스트 추출이 손상된 값은 처음에
+   물리적 정합성으로 복원한 뒤, PDF 페이지를 이미지로 렌더링해 대조했다.
+   Case 2 접촉력은 원본이 `F_dyn = 1.471×10⁵ N`, `F_stat = 1.724×10⁵ N`(단부),
+   `F_dyn = 3.971×10⁴ N`, `F_stat = 4.766×10⁴ N`(중앙), 8 × 1.75 cm 홀, `K = 1.5`
+   로, **코드에 넣은 값과 정확히 일치**한다.
+   질소 점성 온도계수 `2.255e-8 Pa·s/K` 만 여전히 추정이다 (결과 영향 무시 수준).
+
+## 5. 알려진 수치적 특성
+
+Case 1의 pig 속도에는 상류 가스(스프링)와 하류 물기둥(질량)의 실제 진동이
+나타난다. 격자 수렴 시험 (N = 70 → 280) 결과 **pig 궤적은 수렴**하지만
+(400 s 시점 위치 450.4 → 448.2 m, 0.5 % 이내) 진동 진폭은 격자에 민감하다
+(속도 표준편차 0.42 → 0.13 m/s). 기본값 `N = 200` 은 이 진폭이 거의 잦아든
+영역이다.
+
+---
+
+## 6. 인용
+
+이 코드는 아래 논문의 모델을 독립적으로 다시 구현한 것이다. 논문 본문과 그림은
+저장소에 포함하지 않는다. `plots/paper_reference.py`의 값은 비교를 위해 논문
+그림에서 읽어 낸 좌표다.
+
+> A. O. Nieckele, A. M. B. Braga, L. F. A. Azevedo,
+> "Transient Pig Motion Through Non-Isothermal Gas and Liquid Pipelines",
+> *Proceedings of the 3rd International Pipeline Conference (IPC2000)*,
+> Calgary, Alberta, Canada, ASME, Paper No. **IPC2000-175**, 2000.
+
+```bibtex
+@inproceedings{nieckele2000transient,
+  author    = {Nieckele, A. O. and Braga, A. M. B. and Azevedo, L. F. A.},
+  title     = {Transient Pig Motion Through Non-Isothermal Gas and Liquid Pipelines},
+  booktitle = {Proceedings of the 3rd International Pipeline Conference (IPC2000)},
+  publisher = {ASME},
+  number    = {IPC2000-175},
+  year      = {2000}
+}
+```
+
+## 7. 라이선스
+
+[MIT License](LICENSE) © 2026 NNOOHHDD
