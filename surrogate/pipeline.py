@@ -57,17 +57,37 @@ INPUTS = list(RANGES)
 OUTPUTS = ["t_arrive", "v_max"]
 
 
-def build(p_in, mass, F_fric, L, N=40, isothermal=False):
+def build(p_in, mass, F_fric, L, N=40, isothermal=False,
+          p_in_of_t=None, chi_of_t=None, F_fric_of_s=None):
+    """Set up one pigsim run.
+
+    The three optional hooks change operating conditions only -- the solver
+    and its numerics are untouched.  With all three left at None the run is
+    identical to stage 1 (tests/test_pipeline_hooks.py checks this).
+
+        p_in_of_t(t, p_nominal) -> inlet pressure [Pa]   e.g. a supply pressure drop
+        chi_of_t(t)             -> outlet valve opening   e.g. a partly closed valve
+        F_fric_of_s(s)          -> dynamic friction [N]   e.g. more friction after s_a
+                                   (static friction stays 1.2 x dynamic)
+    """
     const = lambda v: (lambda s: np.full(np.shape(s), v))  # noqa: E731
     route = PipeRoute(xy=[(0.0, 0.0), (L, 0.0)], D=D, wall=WALL, rough=ROUGH,
                       E=2.0e11, nu=0.3, T_amb=const(T_AMB), U_gas=const(10.0))
-    pig = Pig(mass=mass, F_stat=STATIC_OVER_DYNAMIC * F_fric, F_dyn=F_fric)
+    if F_fric_of_s is None:
+        pig = Pig(mass=mass, F_stat=STATIC_OVER_DYNAMIC * F_fric, F_dyn=F_fric)
+    else:
+        pig = Pig(mass=mass, F_stat=lambda s: STATIC_OVER_DYNAMIC * F_fric_of_s(s),
+                  F_dyn=F_fric_of_s)
 
     def inlet(t):
-        return {"type": "p", "p": P0 + (p_in - P0) * min(t / T_RAMP, 1.0), "T": T_AMB}
+        p = P0 + (p_in - P0) * min(t / T_RAMP, 1.0)
+        if p_in_of_t is not None:
+            p = p_in_of_t(t, p)
+        return {"type": "p", "p": p, "T": T_AMB}
 
     def outlet(t):
-        return {"type": "valve", "CdA": CDA_VALVE, "chi": 1.0, "p_res": P_RES}
+        chi = 1.0 if chi_of_t is None else chi_of_t(t)
+        return {"type": "valve", "CdA": CDA_VALVE, "chi": chi, "p_res": P_RES}
 
     sol = PigFlowSolver(route, pig, nitrogen(), N_up=N, N_down=N, cluster=1.5,
                         bc_inlet=inlet, bc_outlet=outlet,
