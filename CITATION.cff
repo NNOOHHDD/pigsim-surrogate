@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it as below, and cite the paper whose
+  model it re-implements (see references).
+title: "pigsim-surrogate: transient pig motion solver and machine-learning surrogates"
+type: software
+authors:
+  - alias: NNOOHHDD
+license: MIT
+repository-code: "https://github.com/NNOOHHDD/pigsim-surrogate"
+keywords:
+  - pipeline pigging
+  - transient flow
+  - surrogate model
+  - DeepONet
+  - anomaly detection
+references:
+  - type: conference-paper
+    title: "Transient Pig Motion Through Non-Isothermal Gas and Liquid Pipelines"
+    authors:
+      - family-names: Nieckele
+        given-names: A. O.
+      - family-names: Braga
+        given-names: A. M. B.
+      - family-names: Azevedo
+        given-names: L. F. A.
+    collection-title: "Proceedings of the 3rd International Pipeline Conference (IPC2000)"
+    conference:
+      name: "3rd International Pipeline Conference (IPC2000)"
+      city: Calgary
+      country: CA
+    publisher:
+      name: ASME
+    number: "IPC2000-175"
+    year: 2000

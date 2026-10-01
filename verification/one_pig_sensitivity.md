@@ -93,14 +93,7 @@ reaches it at about 697.9 s.
 
 ## Reproduction
 
-```powershell
+```bash
 python plots/one_pig_sensitivity.py --case case1 --N 200 --dt-max 2 --s0 10
 python plots/one_pig_sensitivity.py --case case2 --N 70 --dt-max 2 --transition 20 --s0 5
 ```
-
-## Related
-
-An unmerged attempt at the same accuracy question from the numerical side —
-paper-exact central differencing and proportional node redistribution — is
-recorded in `adaptive_grid_reference.md`. It is reference material; none of it
-is implemented here.
