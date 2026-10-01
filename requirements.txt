@@ -1,0 +1,11 @@
+# Versions the results in this repository were produced with (Python 3.11, CPU only).
+numpy==2.4.6
+scipy==1.17.1
+matplotlib==3.11.2
+pandas==3.0.6
+scikit-learn==1.9.1
+# CPU wheel: pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0
+# FastMCP API (renamed in the 2.x SDK)
+mcp[cli]==1.30.0
+pytest==9.1.1

@@ -51,9 +51,9 @@ P_MIN_ARRIVE = 0.95
 class TorchSurrogate:
     """Differentiable versions of Ensemble.predict and ArrivalClassifier.predict_proba."""
 
-    def __init__(self):
-        ens = load_ensemble(os.path.join(HERE, "models", "wide_ensemble.pt"))
-        clf = load_classifier()
+    def __init__(self, ens=None, clf=None):
+        ens = ens if ens is not None else load_ensemble(os.path.join(HERE, "models", "wide_ensemble.pt"))
+        clf = clf if clf is not None else load_classifier()
         self.regs, self.cls = ens.models, clf.models
         f = lambda a: torch.tensor(np.asarray(a), dtype=torch.float32)  # noqa: E731
         self.xm, self.xsd = f(ens.xs.mean), f(ens.xs.std)
