@@ -1,0 +1,300 @@
+{
+  "counts": {
+    "drift": 40,
+    "friction": 80,
+    "normal": 321,
+    "spikes": 40,
+    "supply": 80,
+    "valve": 80
+  },
+  "normal_split": [
+    192,
+    48,
+    81
+  ],
+  "faults_not_arrived": {
+    "friction": 2,
+    "valve": 0,
+    "supply": 0,
+    "drift": 0,
+    "spikes": 0
+  },
+  "results": {
+    "raw / z-score": {
+      "threshold": 2.269523100583341,
+      "false_alarm_rate_normal_test": 0.037037037037037035,
+      "mean_alarm_seconds_per_normal_run": 0.43209876543209874,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.4638888888888889,
+        "detected": 0.0125,
+        "delay_s_median": 31.0,
+        "delay_s_p90": 31.0,
+        "alarm_before_onset": 0.0
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 0.4842592592592593,
+        "detected": 0.0625,
+        "delay_s_median": 8.0,
+        "delay_s_p90": 21.0,
+        "alarm_before_onset": 0.0
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.4853395061728395,
+        "detected": 0.0125,
+        "delay_s_median": 0.0,
+        "delay_s_p90": 0.0,
+        "alarm_before_onset": 0.0125
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.5231481481481481,
+        "detected": 0.025,
+        "delay_s_median": 55.0,
+        "delay_s_p90": 55.0,
+        "alarm_before_onset": 0.0
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.5851851851851853,
+        "detected": 0.1,
+        "delay_s_median": 0.0,
+        "delay_s_p90": 11.200000000000003,
+        "alarm_before_onset": 0.025
+      },
+      "fit_and_score_s": 0.030502628999784065
+    },
+    "raw / PCA": {
+      "threshold": 0.13802620270948546,
+      "false_alarm_rate_normal_test": 0.012345679012345678,
+      "mean_alarm_seconds_per_normal_run": 0.1111111111111111,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.6705246913580247,
+        "detected": 0.0875,
+        "delay_s_median": 24.0,
+        "delay_s_p90": 122.40000000000005,
+        "alarm_before_onset": 0.0
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 0.9751543209876543,
+        "detected": 0.7,
+        "delay_s_median": 14.5,
+        "delay_s_p90": 28.0,
+        "alarm_before_onset": 0.0
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.549537037037037,
+        "detected": 0.1,
+        "delay_s_median": 6.5,
+        "delay_s_p90": 19.3,
+        "alarm_before_onset": 0.0125
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.48981481481481487,
+        "detected": 0.025,
+        "delay_s_median": 7.0,
+        "delay_s_p90": 7.0,
+        "alarm_before_onset": 0.0
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.5950617283950617,
+        "detected": 0.025,
+        "delay_s_median": 7.0,
+        "delay_s_p90": 7.0,
+        "alarm_before_onset": 0.0
+      },
+      "fit_and_score_s": 0.7475661320004292
+    },
+    "raw / CNN-AE": {
+      "threshold": 0.013557026162743568,
+      "false_alarm_rate_normal_test": 0.07407407407407407,
+      "mean_alarm_seconds_per_normal_run": 0.7530864197530864,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.7913580246913581,
+        "detected": 0.5875,
+        "delay_s_median": 16.0,
+        "delay_s_p90": 44.59999999999999,
+        "alarm_before_onset": 0.0
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 1.0,
+        "detected": 1.0,
+        "delay_s_median": 4.0,
+        "delay_s_p90": 7.0,
+        "alarm_before_onset": 0.0
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.9743827160493828,
+        "detected": 0.85,
+        "delay_s_median": 5.0,
+        "delay_s_p90": 8.300000000000004,
+        "alarm_before_onset": 0.0
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.4959876543209877,
+        "detected": 0.075,
+        "delay_s_median": 46.0,
+        "delay_s_p90": 105.2,
+        "alarm_before_onset": 0.0
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.7141975308641976,
+        "detected": 0.25,
+        "delay_s_median": 19.0,
+        "delay_s_p90": 54.2,
+        "alarm_before_onset": 0.0
+      },
+      "fit_and_score_s": 20.1454997740002
+    },
+    "normalised / z-score": {
+      "threshold": 5.557074455099706,
+      "false_alarm_rate_normal_test": 0.037037037037037035,
+      "mean_alarm_seconds_per_normal_run": 1.3580246913580247,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.697067901234568,
+        "detected": 0.0375,
+        "delay_s_median": 80.0,
+        "delay_s_p90": 93.6,
+        "alarm_before_onset": 0.0125
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 0.9691358024691359,
+        "detected": 0.6125,
+        "delay_s_median": 4.0,
+        "delay_s_p90": 5.200000000000003,
+        "alarm_before_onset": 0.0125
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.9354938271604938,
+        "detected": 0.375,
+        "delay_s_median": 4.0,
+        "delay_s_p90": 6.200000000000003,
+        "alarm_before_onset": 0.0
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.48703703703703705,
+        "detected": 0.0,
+        "delay_s_median": null,
+        "delay_s_p90": null,
+        "alarm_before_onset": 0.0
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.6496913580246915,
+        "detected": 0.125,
+        "delay_s_median": 16.0,
+        "delay_s_p90": 49.0,
+        "alarm_before_onset": 0.025
+      },
+      "fit_and_score_s": 0.03724982300082047
+    },
+    "normalised / PCA": {
+      "threshold": 0.0716970161842697,
+      "false_alarm_rate_normal_test": 0.037037037037037035,
+      "mean_alarm_seconds_per_normal_run": 0.2716049382716049,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.7194444444444444,
+        "detected": 0.35,
+        "delay_s_median": 8.0,
+        "delay_s_p90": 15.0,
+        "alarm_before_onset": 0.0
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 1.0,
+        "detected": 1.0,
+        "delay_s_median": 3.0,
+        "delay_s_p90": 4.1000000000000085,
+        "alarm_before_onset": 0.0125
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.8824074074074074,
+        "detected": 0.5125,
+        "delay_s_median": 3.0,
+        "delay_s_p90": 4.0,
+        "alarm_before_onset": 0.0
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.4870370370370371,
+        "detected": 0.0,
+        "delay_s_median": null,
+        "delay_s_p90": null,
+        "alarm_before_onset": 0.0
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.7561728395061729,
+        "detected": 0.175,
+        "delay_s_median": 0.0,
+        "delay_s_p90": 19.80000000000001,
+        "alarm_before_onset": 0.025
+      },
+      "fit_and_score_s": 3.312412919000053
+    },
+    "normalised / CNN-AE": {
+      "threshold": 0.08481959998607635,
+      "false_alarm_rate_normal_test": 0.1111111111111111,
+      "mean_alarm_seconds_per_normal_run": 1.5061728395061729,
+      "friction": {
+        "n": 80,
+        "roc_auc": 0.8587962962962963,
+        "detected": 0.65,
+        "delay_s_median": 6.0,
+        "delay_s_p90": 24.599999999999994,
+        "alarm_before_onset": 0.0125
+      },
+      "valve": {
+        "n": 80,
+        "roc_auc": 1.0,
+        "detected": 1.0,
+        "delay_s_median": 3.0,
+        "delay_s_p90": 4.0,
+        "alarm_before_onset": 0.075
+      },
+      "supply": {
+        "n": 80,
+        "roc_auc": 0.941358024691358,
+        "detected": 0.825,
+        "delay_s_median": 3.0,
+        "delay_s_p90": 16.0,
+        "alarm_before_onset": 0.0375
+      },
+      "drift": {
+        "n": 40,
+        "roc_auc": 0.5669753086419753,
+        "detected": 0.1,
+        "delay_s_median": 40.5,
+        "delay_s_p90": 78.30000000000001,
+        "alarm_before_onset": 0.025
+      },
+      "spikes": {
+        "n": 40,
+        "roc_auc": 0.7179012345679012,
+        "detected": 0.2,
+        "delay_s_median": 0.0,
+        "delay_s_p90": 47.699999999999996,
+        "alarm_before_onset": 0.05
+      },
+      "fit_and_score_s": 18.876892224000585
+    }
+  }
+}
