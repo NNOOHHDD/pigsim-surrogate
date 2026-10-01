@@ -249,6 +249,12 @@ mean, std, members = ens.predict(np.array([[5.5e5, 110.0, 3500.0, 1750.0]]))
 
 ---
 
+## 2단계 이후
+
+- 3단계(속도 곡선 전체 예측): [stage3/RESULTS_stage3.md](stage3/RESULTS_stage3.md)
+- 이상 탐지: [../anomaly/RESULTS_anomaly.md](../anomaly/RESULTS_anomaly.md)
+- 학습된 모델 불러오기는 `surrogate/registry.py` 한 곳에 모았다 (MCP 서버, 노트북이 사용).
+
 ## 한계와 다음 단계
 
 - 앙상블 std는 **모델 불확실성만** 나타낸다. pigsim 자체가 결정론적이라 데이터
