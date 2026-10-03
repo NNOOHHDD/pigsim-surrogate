@@ -27,6 +27,7 @@ Thumbs.db
 !anomaly/runs.npz
 !surrogate/stage3/curves.npz
 !surrogate/stage3/test_predictions.npz
+!control/data/*.npz
 *.npy
 *.h5
 *.hdf5

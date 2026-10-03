@@ -9,3 +9,6 @@ torch==2.14.0
 # FastMCP API (renamed in the 2.x SDK)
 mcp[cli]==1.30.0
 pytest==9.1.1
+# valve-control demo (control/)
+gymnasium==1.3.0
+stable-baselines3==2.9.0

@@ -1,0 +1,709 @@
+{
+ "scenario": {
+  "L": 1500.0,
+  "p_in": 300000.0,
+  "chi_max": 3.0,
+  "dt_ctrl": 1.0,
+  "du_max": 0.1,
+  "u0": 0.5,
+  "s_limit": 750.0,
+  "v_cap": 8.0,
+  "t_target": 150.0,
+  "t_max": 400.0,
+  "train": {
+   "mass": [
+    20.0,
+    200.0
+   ],
+   "F_fric": [
+    1000.0,
+    4000.0
+   ]
+  },
+  "high_friction": {
+   "mass": [
+    20.0,
+    200.0
+   ],
+   "F_fric": [
+    4000.0,
+    6000.0
+   ]
+  }
+ },
+ "lumped_model": {
+  "params": {
+   "n": 1.0,
+   "c_g": 0.4537487407515406,
+   "f_mult": 0.9721523884122609,
+   "K_in": 1.2907733423779701,
+   "l_in": 2.0
+  },
+  "summary_calib": {
+   "t_arrive_err_mean_abs_pct": 0.2636888360695998,
+   "v_launch_err_mean_abs_pct": 5.690521278659221,
+   "v_lim_err_mean_abs_pct": 16.557821493611005,
+   "rms_V_second_half_mean": 0.8662864651302361
+  },
+  "summary_valid": {
+   "t_arrive_err_mean_abs_pct": 0.7106555055774063,
+   "v_launch_err_mean_abs_pct": 6.646837461441712,
+   "v_lim_err_mean_abs_pct": 8.203819941767799,
+   "rms_V_second_half_mean": 1.0115789809644984
+  },
+  "valve_authority_pigsim": [
+   {
+    "u": 0.1,
+    "v_launch": 47.33118697384961,
+    "V_at_half": 1.9529813772617537,
+    "v_lim": 1.9495683144757785,
+    "t_arrive": NaN
+   },
+   {
+    "u": 0.33,
+    "v_launch": 47.33148903758018,
+    "V_at_half": 7.146220788354584,
+    "v_lim": 7.131356055448924,
+    "t_arrive": 173.52811062494254
+   },
+   {
+    "u": 1.0,
+    "v_launch": 47.33157503139292,
+    "V_at_half": 18.016883446301417,
+    "v_lim": 18.001872597753657,
+    "t_arrive": 76.0273763180792
+   }
+  ]
+ },
+ "controllers": {
+  "fixed": {
+   "u": 0.355,
+   "return_mean_pig": -1.2801026047258972
+  },
+  "pi": {
+   "v_ref": 7.75,
+   "kp": 0.01,
+   "ki": 0.004,
+   "u_min": 0.2,
+   "mean_return_tuning_set": -0.9622363137960075
+  },
+  "ppo": {
+   "steps": 1000000,
+   "seed": 0,
+   "wall_s": 410.08306662799987,
+   "best_val_return": -0.79491178378521
+  },
+  "ppo_robust": {
+   "steps": 1000000,
+   "seed": 0,
+   "wall_s": 426.3730884779998,
+   "best_val_return": -1.1734718035784217
+  }
+ },
+ "results": {
+  "lumped_train": {
+   "fixed": {
+    "n": 200,
+    "violation_rate": 0.5,
+    "late_rate": 0.84,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 8.669352893688078,
+    "v_max_limited_p95": 13.870331744543892,
+    "v_max_limited_max": 14.524138395391635,
+    "t_arrive_mean": 163.73718009164241,
+    "t_arrive_max": 186.17400775527653,
+    "valve_travel_mean": 0.0,
+    "return_mean": -4.881320539681576,
+    "v_max_launch_mean": 43.85769659757106
+   },
+   "pi": {
+    "n": 200,
+    "violation_rate": 0.135,
+    "late_rate": 0.12,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.937470450088667,
+    "v_max_limited_p95": 9.341428088117514,
+    "v_max_limited_max": 10.266707746578604,
+    "t_arrive_mean": 141.72911049458762,
+    "t_arrive_max": 152.74802918105075,
+    "valve_travel_mean": 0.8093318379024806,
+    "return_mean": -0.9967128056756862,
+    "v_max_launch_mean": 43.749371708956076
+   },
+   "ppo": {
+    "n": 200,
+    "violation_rate": 0.07,
+    "late_rate": 0.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.85522704977629,
+    "v_max_limited_p95": 8.023419959175742,
+    "v_max_limited_max": 8.229539764633685,
+    "t_arrive_mean": 132.36977998910504,
+    "t_arrive_max": 138.2107681471841,
+    "valve_travel_mean": 0.7962134727705268,
+    "return_mean": -0.927826528548249,
+    "v_max_launch_mean": 43.949329618303864
+   },
+   "ppo_robust": {
+    "n": 200,
+    "violation_rate": 0.115,
+    "late_rate": 0.25,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.3302234070439045,
+    "v_max_limited_p95": 8.512366598780936,
+    "v_max_limited_max": 8.938334078367653,
+    "t_arrive_mean": 145.98086259150608,
+    "t_arrive_max": 155.3979681128829,
+    "valve_travel_mean": 0.9989311271479819,
+    "return_mean": -1.1863169438632277,
+    "v_max_launch_mean": 43.53191717475092
+   }
+  },
+  "lumped_highF": {
+   "fixed": {
+    "n": 200,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 5.197995610175585,
+    "v_max_limited_p95": 5.547850032327256,
+    "v_max_limited_max": 5.66348836621771,
+    "t_arrive_mean": 208.2470997092571,
+    "t_arrive_max": 233.95253851974604,
+    "valve_travel_mean": 0.0,
+    "return_mean": -5.824709970925705,
+    "v_max_launch_mean": 40.516299665213225
+   },
+   "pi": {
+    "n": 200,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.75969848012651,
+    "v_max_limited_p95": 7.7599582129910605,
+    "v_max_limited_max": 7.760063280437204,
+    "t_arrive_mean": 161.36681931983165,
+    "t_arrive_max": 170.9124111975432,
+    "valve_travel_mean": 1.0414338950758693,
+    "return_mean": -2.1781158270590355,
+    "v_max_launch_mean": 40.55772710213496
+   },
+   "ppo": {
+    "n": 200,
+    "violation_rate": 0.0,
+    "late_rate": 0.195,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.702713969632923,
+    "v_max_limited_p95": 7.800390927408499,
+    "v_max_limited_max": 7.848498898999162,
+    "t_arrive_mean": 145.0345548012688,
+    "t_arrive_max": 154.18224582702496,
+    "valve_travel_mean": 0.6281466220393775,
+    "return_mean": -0.6679475360990252,
+    "v_max_launch_mean": 40.65472450145212
+   },
+   "ppo_robust": {
+    "n": 200,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.002388351084395,
+    "v_max_limited_p95": 7.129439632881063,
+    "v_max_limited_max": 7.197498984791048,
+    "t_arrive_mean": 165.50091453141889,
+    "t_arrive_max": 178.024577292989,
+    "valve_travel_mean": 1.2285532552198275,
+    "return_mean": -2.778644708361718,
+    "v_max_launch_mean": 40.459336167513705
+   }
+  },
+  "pigsim_train": {
+   "fixed": {
+    "n": 20,
+    "violation_rate": 0.25,
+    "late_rate": 0.85,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.539931954272497,
+    "v_max_limited_p95": 8.523993001221971,
+    "v_max_limited_max": 8.558026510407752,
+    "t_arrive_mean": 163.89884671287425,
+    "t_arrive_max": 184.55613731804664,
+    "valve_travel_mean": 0.0,
+    "return_mean": -2.2551448931128886,
+    "v_max_launch_mean": 46.908558732337426
+   },
+   "pi": {
+    "n": 20,
+    "violation_rate": 0.0,
+    "late_rate": 0.4,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.740787275979803,
+    "v_max_limited_p95": 7.751272057024167,
+    "v_max_limited_max": 7.751281369141355,
+    "t_arrive_mean": 148.24600231622168,
+    "t_arrive_max": 157.4008515892444,
+    "valve_travel_mean": 0.7925299738872394,
+    "return_mean": -0.9575281799400285,
+    "v_max_launch_mean": 46.90685536358571
+   },
+   "ppo": {
+    "n": 20,
+    "violation_rate": 1.0,
+    "late_rate": 0.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 9.278890842044458,
+    "v_max_limited_p95": 9.753950630004924,
+    "v_max_limited_max": 9.87835643816817,
+    "t_arrive_mean": 133.8344003263383,
+    "t_arrive_max": 139.16907842290547,
+    "valve_travel_mean": 0.8205084888264536,
+    "return_mean": -25.765483145647927,
+    "v_max_launch_mean": 46.9092374756369
+   },
+   "ppo_robust": {
+    "n": 20,
+    "violation_rate": 0.9,
+    "late_rate": 0.2,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 8.584852398941077,
+    "v_max_limited_p95": 9.097018335531622,
+    "v_max_limited_max": 9.148645134938423,
+    "t_arrive_mean": 145.24983358958212,
+    "t_arrive_max": 153.88351438566127,
+    "valve_travel_mean": 0.9856792744982521,
+    "return_mean": -6.490358477312872,
+    "v_max_launch_mean": 46.902925599009095
+   }
+  },
+  "pigsim_highF": {
+   "fixed": {
+    "n": 10,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 5.591822961278573,
+    "v_max_limited_p95": 6.159136424580081,
+    "v_max_limited_max": 6.240115369198868,
+    "t_arrive_mean": 208.24900214938066,
+    "t_arrive_max": 230.79766437312907,
+    "valve_travel_mean": 0.0,
+    "return_mean": -5.8251873518722785,
+    "v_max_launch_mean": 45.14010822639172
+   },
+   "pi": {
+    "n": 10,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.756453689270572,
+    "v_max_limited_p95": 7.758815094395796,
+    "v_max_limited_max": 7.75896804405704,
+    "t_arrive_mean": 166.08570467084223,
+    "t_arrive_max": 173.4032831643544,
+    "valve_travel_mean": 1.0321225857179734,
+    "return_mean": -2.6409020057596435,
+    "v_max_launch_mean": 45.14019276356943
+   },
+   "ppo": {
+    "n": 10,
+    "violation_rate": 0.9,
+    "late_rate": 0.3,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 8.365737585418461,
+    "v_max_limited_p95": 8.70936986583421,
+    "v_max_limited_max": 8.819488394795892,
+    "t_arrive_mean": 146.63613973382422,
+    "t_arrive_max": 154.53359645070645,
+    "valve_travel_mean": 0.5584279478155076,
+    "return_mean": -8.508180231287692,
+    "v_max_launch_mean": 45.14019813668883
+   },
+   "ppo_robust": {
+    "n": 10,
+    "violation_rate": 0.0,
+    "late_rate": 1.0,
+    "arrived_rate": 1.0,
+    "v_max_limited_mean": 7.445188745456042,
+    "v_max_limited_p95": 7.7519356799666035,
+    "v_max_limited_max": 7.755945994471075,
+    "t_arrive_mean": 164.95441145153933,
+    "t_arrive_max": 176.0198849715086,
+    "valve_travel_mean": 1.2149988868692891,
+    "return_mean": -2.710612919013979,
+    "v_max_launch_mean": 45.140143568395416
+   }
+  }
+ },
+ "sim_to_sim_gap": {
+  "pigsim_train": {
+   "fixed": {
+    "lumped": {
+     "n": 20,
+     "violation_rate": 0.55,
+     "late_rate": 0.85,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 8.679302311108902,
+     "v_max_limited_p95": 13.703610831972698,
+     "v_max_limited_max": 13.978729102377798,
+     "t_arrive_mean": 163.83490826419302,
+     "t_arrive_max": 184.67468812316952,
+     "valve_travel_mean": 0.0,
+     "return_mean": -4.936206875613639,
+     "v_max_launch_mean": 43.87317593966601
+    },
+    "pigsim": {
+     "n": 20,
+     "violation_rate": 0.25,
+     "late_rate": 0.85,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.539931954272497,
+     "v_max_limited_p95": 8.523993001221971,
+     "v_max_limited_max": 8.558026510407752,
+     "t_arrive_mean": 163.89884671287425,
+     "t_arrive_max": 184.55613731804664,
+     "valve_travel_mean": 0.0,
+     "return_mean": -2.2551448931128886,
+     "v_max_launch_mean": 46.908558732337426
+    },
+    "delta": {
+     "violation_rate": -0.30000000000000004,
+     "late_rate": 0.0,
+     "v_max_limited_mean": -1.1393703568364053,
+     "t_arrive_mean": 0.06393844868122756,
+     "valve_travel_mean": 0.0,
+     "return_mean": 2.6810619825007502
+    },
+    "paired": {
+     "dv_lim_mean": -1.1393703568364024,
+     "dv_lim_absmax": 5.494495927817079,
+     "dt_arrive_mean": 0.06393844868119913,
+     "dt_arrive_absmax": 0.24296203120860582
+    }
+   },
+   "pi": {
+    "lumped": {
+     "n": 20,
+     "violation_rate": 0.1,
+     "late_rate": 0.15,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.92283147403586,
+     "v_max_limited_p95": 9.114011203688273,
+     "v_max_limited_max": 9.479190139232575,
+     "t_arrive_mean": 141.7724075384948,
+     "t_arrive_max": 151.82710372294056,
+     "valve_travel_mean": 0.8070318795143437,
+     "return_mean": -0.9695435198985118,
+     "v_max_launch_mean": 43.765308044564115
+    },
+    "pigsim": {
+     "n": 20,
+     "violation_rate": 0.0,
+     "late_rate": 0.4,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.740787275979803,
+     "v_max_limited_p95": 7.751272057024167,
+     "v_max_limited_max": 7.751281369141355,
+     "t_arrive_mean": 148.24600231622168,
+     "t_arrive_max": 157.4008515892444,
+     "valve_travel_mean": 0.7925299738872394,
+     "return_mean": -0.9575281799400285,
+     "v_max_launch_mean": 46.90685536358571
+    },
+    "delta": {
+     "violation_rate": -0.1,
+     "late_rate": 0.25,
+     "v_max_limited_mean": -0.1820441980560572,
+     "t_arrive_mean": 6.473594777726873,
+     "valve_travel_mean": -0.014501905627104295,
+     "return_mean": 0.012015339958483362
+    },
+    "paired": {
+     "dv_lim_mean": -0.1820441980560561,
+     "dv_lim_absmax": 1.7511733462888541,
+     "dt_arrive_mean": 6.4735947777268565,
+     "dt_arrive_absmax": 7.271381776892042
+    }
+   },
+   "ppo": {
+    "lumped": {
+     "n": 20,
+     "violation_rate": 0.05,
+     "late_rate": 0.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.855714233693246,
+     "v_max_limited_p95": 7.9619067894552655,
+     "v_max_limited_max": 8.018009702985456,
+     "t_arrive_mean": 132.3932069755653,
+     "t_arrive_max": 137.5984905117957,
+     "valve_travel_mean": 0.795520673901774,
+     "return_mean": -0.8711809408228248,
+     "v_max_launch_mean": 43.96582894889381
+    },
+    "pigsim": {
+     "n": 20,
+     "violation_rate": 1.0,
+     "late_rate": 0.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 9.278890842044458,
+     "v_max_limited_p95": 9.753950630004924,
+     "v_max_limited_max": 9.87835643816817,
+     "t_arrive_mean": 133.8344003263383,
+     "t_arrive_max": 139.16907842290547,
+     "valve_travel_mean": 0.8205084888264536,
+     "return_mean": -25.765483145647927,
+     "v_max_launch_mean": 46.9092374756369
+    },
+    "delta": {
+     "violation_rate": 0.95,
+     "late_rate": 0.0,
+     "v_max_limited_mean": 1.4231766083512118,
+     "t_arrive_mean": 1.4411933507730055,
+     "valve_travel_mean": 0.024987814924679608,
+     "return_mean": -24.894302204825102
+    },
+    "paired": {
+     "dv_lim_mean": 1.4231766083512094,
+     "dv_lim_absmax": 1.9629020886030455,
+     "dt_arrive_mean": 1.4411933507729515,
+     "dt_arrive_absmax": 1.740896911336506
+    }
+   },
+   "ppo_robust": {
+    "lumped": {
+     "n": 20,
+     "violation_rate": 0.15,
+     "late_rate": 0.25,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.351656796073897,
+     "v_max_limited_p95": 8.52311157772665,
+     "v_max_limited_max": 8.576173505604435,
+     "t_arrive_mean": 146.02141563778451,
+     "t_arrive_max": 154.66758199111842,
+     "valve_travel_mean": 0.9992175456252879,
+     "return_mean": -1.2078222798033655,
+     "v_max_launch_mean": 43.549244706948386
+    },
+    "pigsim": {
+     "n": 20,
+     "violation_rate": 0.9,
+     "late_rate": 0.2,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 8.584852398941077,
+     "v_max_limited_p95": 9.097018335531622,
+     "v_max_limited_max": 9.148645134938423,
+     "t_arrive_mean": 145.24983358958212,
+     "t_arrive_max": 153.88351438566127,
+     "valve_travel_mean": 0.9856792744982521,
+     "return_mean": -6.490358477312872,
+     "v_max_launch_mean": 46.902925599009095
+    },
+    "delta": {
+     "violation_rate": 0.75,
+     "late_rate": -0.04999999999999999,
+     "v_max_limited_mean": 1.2331956028671804,
+     "t_arrive_mean": -0.7715820482023901,
+     "valve_travel_mean": -0.013538271127035761,
+     "return_mean": -5.282536197509507
+    },
+    "paired": {
+     "dv_lim_mean": 1.2331956028671793,
+     "dv_lim_absmax": 1.8985493018528201,
+     "dt_arrive_mean": -0.7715820482024356,
+     "dt_arrive_absmax": 0.9110005412609326
+    }
+   }
+  },
+  "pigsim_highF": {
+   "fixed": {
+    "lumped": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 5.20364960267253,
+     "v_max_limited_p95": 5.572725558056825,
+     "v_max_limited_max": 5.6589726986491975,
+     "t_arrive_mean": 208.37990508743218,
+     "t_arrive_max": 230.8959020238581,
+     "valve_travel_mean": 0.0,
+     "return_mean": -5.837990508743213,
+     "v_max_launch_mean": 40.51425749095135
+    },
+    "pigsim": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 5.591822961278573,
+     "v_max_limited_p95": 6.159136424580081,
+     "v_max_limited_max": 6.240115369198868,
+     "t_arrive_mean": 208.24900214938066,
+     "t_arrive_max": 230.79766437312907,
+     "valve_travel_mean": 0.0,
+     "return_mean": -5.8251873518722785,
+     "v_max_launch_mean": 45.14010822639172
+    },
+    "delta": {
+     "violation_rate": 0.0,
+     "late_rate": 0.0,
+     "v_max_limited_mean": 0.38817335860604274,
+     "t_arrive_mean": -0.13090293805151987,
+     "valve_travel_mean": 0.0,
+     "return_mean": 0.012803156870934806
+    },
+    "paired": {
+     "dv_lim_mean": 0.38817335860604274,
+     "dv_lim_absmax": 0.6667758389720033,
+     "dt_arrive_mean": -0.13090293805149997,
+     "dt_arrive_absmax": 0.2497906936138179
+    }
+   },
+   "pi": {
+    "lumped": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.759694747544977,
+     "v_max_limited_p95": 7.759914886815608,
+     "v_max_limited_max": 7.759932040769387,
+     "t_arrive_mean": 161.4350523606896,
+     "t_arrive_max": 169.60384269644237,
+     "valve_travel_mean": 1.0463111340951712,
+     "return_mean": -2.1898163701641318,
+     "v_max_launch_mean": 40.55637865745584
+    },
+    "pigsim": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.756453689270572,
+     "v_max_limited_p95": 7.758815094395796,
+     "v_max_limited_max": 7.75896804405704,
+     "t_arrive_mean": 166.08570467084223,
+     "t_arrive_max": 173.4032831643544,
+     "valve_travel_mean": 1.0321225857179734,
+     "return_mean": -2.6409020057596435,
+     "v_max_launch_mean": 45.14019276356943
+    },
+    "delta": {
+     "violation_rate": 0.0,
+     "late_rate": 0.0,
+     "v_max_limited_mean": -0.0032410582744049066,
+     "t_arrive_mean": 4.650652310152623,
+     "valve_travel_mean": -0.01418854837719774,
+     "return_mean": -0.45108563559551174
+    },
+    "paired": {
+     "dv_lim_mean": -0.0032410582744064166,
+     "dv_lim_absmax": 0.007142371694184746,
+     "dt_arrive_mean": 4.650652310152614,
+     "dt_arrive_absmax": 5.334620178071219
+    }
+   },
+   "ppo": {
+    "lumped": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 0.2,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.704955223225044,
+     "v_max_limited_p95": 7.816036305592411,
+     "v_max_limited_max": 7.846559412488874,
+     "t_arrive_mean": 145.03894272769543,
+     "t_arrive_max": 152.9300886130697,
+     "valve_travel_mean": 0.6320184762496501,
+     "return_mean": -0.6680309953006328,
+     "v_max_launch_mean": 40.65516277152629
+    },
+    "pigsim": {
+     "n": 10,
+     "violation_rate": 0.9,
+     "late_rate": 0.3,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 8.365737585418461,
+     "v_max_limited_p95": 8.70936986583421,
+     "v_max_limited_max": 8.819488394795892,
+     "t_arrive_mean": 146.63613973382422,
+     "t_arrive_max": 154.53359645070645,
+     "valve_travel_mean": 0.5584279478155076,
+     "return_mean": -8.508180231287692,
+     "v_max_launch_mean": 45.14019813668883
+    },
+    "delta": {
+     "violation_rate": 0.9,
+     "late_rate": 0.09999999999999998,
+     "v_max_limited_mean": 0.6607823621934177,
+     "t_arrive_mean": 1.5971970061287948,
+     "valve_travel_mean": -0.07359052843414249,
+     "return_mean": -7.8401492359870595
+    },
+    "paired": {
+     "dv_lim_mean": 0.660782362193419,
+     "dv_lim_absmax": 0.9729289823070175,
+     "dt_arrive_mean": 1.5971970061287692,
+     "dt_arrive_absmax": 1.7903782673416515
+    }
+   },
+   "ppo_robust": {
+    "lumped": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.008616031536315,
+     "v_max_limited_p95": 7.155110269561596,
+     "v_max_limited_max": 7.197346155368388,
+     "t_arrive_mean": 165.5504587999528,
+     "t_arrive_max": 176.35493508192283,
+     "valve_travel_mean": 1.2280110333953058,
+     "return_mean": -2.7830569133905856,
+     "v_max_launch_mean": 40.45934730677468
+    },
+    "pigsim": {
+     "n": 10,
+     "violation_rate": 0.0,
+     "late_rate": 1.0,
+     "arrived_rate": 1.0,
+     "v_max_limited_mean": 7.445188745456042,
+     "v_max_limited_p95": 7.7519356799666035,
+     "v_max_limited_max": 7.755945994471075,
+     "t_arrive_mean": 164.95441145153933,
+     "t_arrive_max": 176.0198849715086,
+     "valve_travel_mean": 1.2149988868692891,
+     "return_mean": -2.710612919013979,
+     "v_max_launch_mean": 45.140143568395416
+    },
+    "delta": {
+     "violation_rate": 0.0,
+     "late_rate": 0.0,
+     "v_max_limited_mean": 0.43657271391972685,
+     "t_arrive_mean": -0.5960473484134639,
+     "valve_travel_mean": -0.013012146526016677,
+     "return_mean": 0.07244399437660665
+    },
+    "paired": {
+     "dv_lim_mean": 0.4365727139197274,
+     "dv_lim_absmax": 0.6742839890707311,
+     "dt_arrive_mean": -0.596047348413481,
+     "dt_arrive_absmax": 0.7788526931308297
+    }
+   }
+  }
+ },
+ "mean_wall_s_per_run": {
+  "lumped_train": {
+   "fixed": 0.02655080436000844,
+   "pi": 0.027570095634964674,
+   "ppo": 0.056668547995050174,
+   "ppo_robust": 0.06121715454004516
+  },
+  "pigsim_train": {
+   "fixed": 10.748507145550002,
+   "pi": 10.721195655050064,
+   "ppo": 11.180907153950011,
+   "ppo_robust": 10.74468581154997
+  }
+ }
+}
