@@ -7,7 +7,8 @@
 
 **A re-implemented transient pipeline-pig solver, and an honest comparison of
 machine-learning surrogates for it: scalar outputs, regime changes, inverse
-design, whole speed curves, anomaly detection, and an MCP server.**
+design, whole speed curves, anomaly detection, valve control with
+reinforcement learning, and an MCP server.**
 
 ![overview](docs/overview.png)
 
@@ -52,6 +53,7 @@ Data sizes were set by timing a pilot and fitting a ~40 min, 4-core budget.
 | 2c | inverse design: lowest `p_in` meeting a time / speed target | ensemble + classifier + std penalty | re-run in pigsim: 5/5 candidates met the target far from the threshold, 4/5 near it (one 0.5 % over the speed cap); without the classifier 3/5 never started | [§10](surrogate/RESULTS.md) |
 | 3 | whole speed curve V(ξ), 128 points (760 runs) | MLP ×5 ≈ PCA + GP | relative L2 error: MLP 0.75 %, PCA + GP 0.80 %, DeepONet 1.15 %, PCA + cubic 3.1 %, nearest neighbour 7.2 %; GP's ±2 std covers 92 %, ensembles 70–75 % | [RESULTS_stage3.md](surrogate/stage3/RESULTS_stage3.md) |
 | Anomaly | 6 pressure / flow sensors, 5 fault kinds (641 runs) | 1D-CNN autoencoder on operating-point-normalised residuals | ROC-AUC: valve closing 1.00, supply drop 0.94, friction increase 0.86, sensor spikes 0.72, **sensor drift 0.57 (not detected)** | [RESULTS_anomaly.md](anomaly/RESULTS_anomaly.md) |
+| Control | outlet-valve opening every 1 s: speed ≤ 8 m/s on the second half, arrive within 150 s; pig mass and friction unknown | **PI** (in pigsim) | lumped model, 200 pigs — violations / late: fixed 50 % / 84 %, PI 13.5 % / 12 %, PPO 7 % / 0 %. Same controllers in pigsim, 20 pigs: fixed 25 % / 85 %, **PI 0 % / 40 %, PPO 100 % / 0 %** (sim-to-sim gap) | [RESULTS_control.md](control/RESULTS_control.md) |
 | MCP | 4 tools over stdio for LLM clients | — | demo: "lowest `p_in` for 2 km within 300 s" — first answer missed by 0.02 s in pigsim, the 3-std retry met it | [README_mcp.md](README_mcp.md) |
 
 ### Where a polynomial was enough, and where it was not
@@ -73,6 +75,12 @@ Data sizes were set by timing a pilot and fitting a ~40 min, 4-core budget.
   better for friction increase (0.86 vs 0.72). Nothing tried here detects a
   slow sensor drift, because the "expected normal signal" itself is off by
   ~0.4 bar.
+- **Valve control: a PI was enough; reinforcement learning did not transfer.**
+  PPO beat a tuned PI on the fast lumped model it was trained on (no late
+  arrivals, small speed overshoots), but on pigsim it broke the speed limit in
+  all 20 runs, right where the lumped model is least accurate. The PI regulates
+  the measured speed and kept it under the limit in pigsim too. A PPO trained
+  with a 0.5 m/s margin on a randomised model still failed in 18 of 20.
 
 ## Quickstart
 
@@ -106,6 +114,7 @@ Full reproduction, stage by stage (4 cores):
 | `python surrogate/inverse_design.py` | 1.5 min |
 | `python surrogate/stage3/generate_curves.py && python surrogate/stage3/run_stage3.py` | 31 min + 11 min |
 | `python anomaly/simulate.py && python anomaly/detect.py` | 27 min + 1 min |
+| `python control/calibrate_lumped.py && python control/tune_baselines.py && python control/train_ppo.py && python control/train_ppo.py --robust && python control/evaluate.py` | 1 + 3.5 + 7 + 7 + 6 min |
 | `python mcp_server/demo_client.py` | 1–2 min |
 
 The generated datasets are small (≤ 1.6 MB) and committed, so every analysis
@@ -123,6 +132,7 @@ surrogate/           stage 1-2: data, MLP ensemble, baselines, regime transition
   registry.py          the one place that loads trained models
   stage3/              speed-curve models (DeepONet and baselines)
 anomaly/             sensor time series and anomaly detectors
+control/             outlet-valve control: lumped model, gymnasium env, fixed / PI / PPO, pigsim check
 mcp_server/          MCP server (stdio) and demo client
 notebooks/           demo.ipynb
 docs/                overview figure, detailed solver notes (Korean)
@@ -139,6 +149,9 @@ docs/                overview figure, detailed solver notes (Korean)
   up to ~9×. The PCA + GP curve model is the exception (92 %).
 - The anomaly faults and sensor noise are simulated with simple assumptions;
   sensor drift is not detected by any method here.
+- The control demo has one line and one start-up (empty line), and the pigsim
+  check uses 20 + 10 runs; the outlet valve cannot limit the launch surge
+  there, so the speed limit only applies to the second half of the line.
 - Results come from single splits and seeds; small test sets (16–114 runs in
   some bins) make the smaller differences between models uncertain.
 
