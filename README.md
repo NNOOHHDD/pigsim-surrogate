@@ -5,10 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 
-**A re-implemented transient pipeline-pig solver, and an honest comparison of
-machine-learning surrogates for it: scalar outputs, regime changes, inverse
-design, whole speed curves, anomaly detection, valve control with
-reinforcement learning, and an MCP server.**
+**A transient pipeline-pig solver re-implemented from a published paper, and
+machine-learning surrogates for it compared against simple baselines: scalar
+outputs, regime changes, inverse design, whole speed curves, anomaly
+detection, valve control with reinforcement learning, and an MCP server.**
 
 ![overview](docs/overview.png)
 
@@ -31,12 +31,13 @@ Details and every deliberate deviation from the paper are in
 |---|---|
 | Analytic solutions (`python tests/test_pigsim.py`) | hydrostatic pressure 0.03 %, Darcy–Weisbach drop 0.01 %, isothermal compressible line 0.00 %, by-pass round trip and stick/slip logic exact |
 | Paper case 1, riser dewatering (N₂ / water) | pig passing 350 / 650 / 850 m: −6 % / −1 % / +2 % against the paper's times |
-| Paper case 2, gas line with area changes | 10 km / 15 km / pipe exit: +6 % / −5 % / +3 %; the stop at the 20 km contraction is reproduced |
-| Figure re-reading and grid / time-step sensitivity | [verification/one_pig_sensitivity.md](verification/one_pig_sensitivity.md) |
+| Paper case 2, gas line with area changes | 10 km / 15 km / 20 km / pipe exit: +6 % / −5 % / **+16 %** / +3 %; the stop at the 20 km contraction is reproduced, but it is reached 98 s later than in the paper |
+| Speed and pressure curves read off the paper's figures | 8–12 % RMS ([verification/one_pig_sensitivity.md](verification/one_pig_sensitivity.md), which also covers grid / time-step sensitivity) |
 
-So the solver agrees with the paper to about **±6 % in arrival times**. Every
-surrogate below imitates pigsim, so this is also a floor on how well any of
-them can describe the real physics.
+So arrival times agree with the paper to about **±6 % at six of the seven
+milestones** the paper gives; the arrival at the 20 km contraction is 16 % late.
+Every surrogate below imitates pigsim, so this is also a floor on how well any
+of them can describe the real physics.
 
 ## Results by stage
 
@@ -54,13 +55,14 @@ Data sizes were set by timing a pilot and fitting a ~40 min, 4-core budget.
 | 3 | whole speed curve V(ξ), 128 points (760 runs) | MLP ×5 ≈ PCA + GP | relative L2 error: MLP 0.75 %, PCA + GP 0.80 %, DeepONet 1.15 %, PCA + cubic 3.1 %, nearest neighbour 7.2 %; GP's ±2 std covers 92 %, ensembles 70–75 % | [RESULTS_stage3.md](surrogate/stage3/RESULTS_stage3.md) |
 | Anomaly | 6 pressure / flow sensors, 5 fault kinds (641 runs) | 1D-CNN autoencoder on operating-point-normalised residuals | ROC-AUC: valve closing 1.00, supply drop 0.94, friction increase 0.86, sensor spikes 0.72, **sensor drift 0.57 (not detected)** | [RESULTS_anomaly.md](anomaly/RESULTS_anomaly.md) |
 | Control | outlet-valve opening every 1 s: speed ≤ 8 m/s on the second half, arrive within 150 s; pig mass and friction unknown | **PI** (in pigsim) | lumped model, 200 pigs — violations / late: fixed 50 % / 84 %, PI 13.5 % / 12 %, PPO 7 % / 0 %. Same controllers in pigsim, 20 pigs: fixed 25 % / 85 %, **PI 0 % / 40 %, PPO 100 % / 0 %** (sim-to-sim gap) | [RESULTS_control.md](control/RESULTS_control.md) |
-| MCP | 4 tools over stdio for LLM clients | — | demo: "lowest `p_in` for 2 km within 300 s" — first answer missed by 0.02 s in pigsim, the 3-std retry met it | [README_mcp.md](README_mcp.md) |
+| MCP | 4 tools over stdio for LLM clients | — | scripted demo client (no LLM in the loop): "lowest `p_in` for 2 km within 300 s" — first answer missed by 0.02 s in pigsim, the script's 3-std retry met it | [README_mcp.md](README_mcp.md) |
 
 ### Where a polynomial was enough, and where it was not
 
 - **Scalar outputs inside the trained box: enough.** A cubic polynomial in log
   inputs (70 coefficients, fitted in under a millisecond) matched the neural
-  ensemble, and a Gaussian process beat both by 10× on arrival time.
+  ensemble, and a Gaussian process beat both by 10× on arrival time (the GP
+  and the polynomials used log inputs, the MLP raw inputs).
 - **A wider box with a regime change: not enough.** One global polynomial has
   to bend around the start threshold and loses accuracy everywhere (in-box
   error 0.26 → 1.7 %). But the fix was not a neural network: the GP stayed
@@ -69,7 +71,8 @@ Data sizes were set by timing a pilot and fitting a ~40 min, 4-core budget.
 - **Whole curves: a nonlinear regressor was needed, not necessarily a network.**
   The curves need 20 principal components; a cubic polynomial on them stalls
   at 3 %, while an MLP and a GP on the same components reach 0.75–0.8 %.
-  DeepONet was not the best here (fixed 128-point grid).
+  DeepONet was not the best here (fixed 128-point grid; 4 of its 5 members
+  stopped at the epoch limit).
 - **Anomaly detection: depends on the fault.** PCA on normalised residuals
   already catches a closing valve (AUC 1.00); the CNN autoencoder is clearly
   better for friction increase (0.86 vs 0.72). Nothing tried here detects a
@@ -142,8 +145,9 @@ docs/                overview figure, detailed solver notes (Korean)
 
 - One generic test pipeline; the surrogates are only valid inside its four
   input ranges and know nothing about other geometries, valves or fluids.
-- Everything is learnt from pigsim, which itself is within about ±6 % of the
-  paper; real-world model error is not included.
+- Everything is learnt from pigsim, which itself agrees with the paper's arrival
+  times to about ±6 % at six of seven milestones (16 % at the seventh);
+  real-world model error is not included.
 - Ensemble standard deviations are over-confident (66–91 % of test points inside
   ±2 std instead of 95 %); near the start threshold they understate the error by
   up to ~9×. The PCA + GP curve model is the exception (92 %).
@@ -177,6 +181,12 @@ If you use this code, please cite the paper whose model it re-implements
 
 The paper itself is not included. `plots/paper_reference.py` holds values read
 off its figures for comparison.
+
+## Authorship and tools
+
+The code and documents in this repository were written with an AI coding
+assistant (Claude Code) under my direction. I reviewed the results against the
+solver's analytic checks and the published paper before publishing.
 
 ## License
 
